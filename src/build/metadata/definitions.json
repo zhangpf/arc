@@ -26,6 +26,11 @@
     "developerOnly": true
   },
   {
+    "name": "disableDpiScaling",
+    "defaultValue": false,
+    "help": "Disable DPI Scaling for non-phone form-factors."
+  },
+  {
     "name": "disableGlFixedAttribs",
     "defaultValue": false,
     "help": "Do not support GL_FIXED type attributes which can improve app performance.",

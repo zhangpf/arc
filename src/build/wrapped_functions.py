@@ -27,6 +27,7 @@ def get_wrapped_functions():
                        'epoll_create',
                        'epoll_ctl',
                        'epoll_wait',
+                       'epoll_pwait',
                        'eventfd',
                        'exit',
                        'fchdir',

@@ -35,6 +35,9 @@ ARC_EXPORT int __wrap_epoll_ctl(
     int epfd, int op, int fd, struct epoll_event* event);
 ARC_EXPORT int __wrap_epoll_wait(
     int epfd, struct epoll_event* events, int maxevents, int timeout);
+ARC_EXPORT int __wrap_epoll_pwait(
+    int epfd, struct epoll_event* events, int maxevents, int timeout,
+    const sigset_t *sigmask);
 ARC_EXPORT void __wrap_freeaddrinfo(struct addrinfo* res);
 ARC_EXPORT const char* __wrap_gai_strerror(int errcode);
 ARC_EXPORT int __wrap_getaddrinfo(
@@ -141,6 +144,25 @@ int __wrap_epoll_wait(int epfd, struct epoll_event* events, int maxevents,
                       int timeout) {
   ARC_STRACE_ENTER_FD("epoll_wait", "%d, %p, %d, %d",
                       epfd, events, maxevents, timeout);
+  int result = VirtualFileSystem::GetVirtualFileSystem()->epoll_wait(
+      epfd, events, maxevents, timeout);
+  if (arc::StraceEnabled()) {
+    for (int i = 0; i < result; ++i) {
+      ARC_STRACE_REPORT("fd %d \"%s\" is ready for %s", events[i].data.fd,
+                        arc::GetFdStr(events[i].data.fd).c_str(),
+                        arc::GetEpollEventStr(events[i].events).c_str());
+    }
+  }
+  ARC_STRACE_RETURN(result);
+}
+
+// TODO(khim): Add support for sigmask when we'll start supporting signals on
+// ARC.
+int __wrap_epoll_pwait(int epfd, struct epoll_event* events, int maxevents,
+                       int timeout, const sigset_t *sigmask) {
+  ARC_STRACE_ENTER_FD("epoll_pwait", "%d, %p, %d, %d, %p(%s)",
+                      epfd, events, maxevents, timeout, sigmask,
+                      arc::GetSigSetStr(sigmask).c_str());
   int result = VirtualFileSystem::GetVirtualFileSystem()->epoll_wait(
       epfd, events, maxevents, timeout);
   if (arc::StraceEnabled()) {
