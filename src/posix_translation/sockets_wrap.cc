@@ -338,12 +338,30 @@ int __wrap_pipe2(int pipefd[2], int flags) {
   ARC_STRACE_RETURN(result);
 }
 
+// TODO(khim): Add support for sigmask when we'll start supporting signals on
+// ARC.
+// TODO(khim): Provide nanosecond timeout precision.
 int __wrap_pselect(int nfds, fd_set* readfds, fd_set* writefds,
-                   fd_set* exceptfds, const struct timespec* timeout,
+                   fd_set* exceptfds, const struct timespec* timeout_timespec,
                    const sigset_t* sigmask) {
-  ALOG_ASSERT(false, "pselect is not supported");
-  errno = EAFNOSUPPORT;
-  return -1;
+  // TODO(crbug.com/241955): Stringify *fds parameters.
+  ARC_STRACE_ENTER("pselect", "%d, %p, %p, %p, %p, %p(%s)",
+                   nfds, readfds, writefds, exceptfds, timeout_timespec,
+                   sigmask, arc::GetSigSetStr(sigmask).c_str());
+  int result;
+  if (timeout_timespec) {
+    struct timeval timeout = {
+      timeout_timespec->tv_sec,
+      timeout_timespec->tv_nsec / static_cast<long>(  // NOLINT(runtime/int)
+          base::Time::kNanosecondsPerMicrosecond)
+    };
+    result = VirtualFileSystem::GetVirtualFileSystem()->select(
+        nfds, readfds, writefds, exceptfds, &timeout);
+  } else {
+    result = VirtualFileSystem::GetVirtualFileSystem()->select(
+        nfds, readfds, writefds, exceptfds, nullptr);
+  }
+  ARC_STRACE_RETURN(result);
 }
 
 ssize_t __wrap_recv(int sockfd, void* buf, size_t len, int flags) {
@@ -396,8 +414,7 @@ int __wrap_select(int nfds, fd_set* readfds, fd_set* writefds,
   ARC_STRACE_ENTER("select", "%d, %p, %p, %p, %p",
                    nfds, readfds, writefds, exceptfds, timeout);
   int result = VirtualFileSystem::GetVirtualFileSystem()->select(
-      nfds, readfds, writefds,
-                                                     exceptfds, timeout);
+      nfds, readfds, writefds, exceptfds, timeout);
   ARC_STRACE_RETURN(result);
 }
 
