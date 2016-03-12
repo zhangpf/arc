@@ -30,6 +30,7 @@ _REMOTE_ENV = {
     # characteristics might be different.
     'TMPDIR': '/var/tmp',
     'XAUTHORITY': '/home/chronos/.Xauthority',
+    'XDG_RUNTIME_DIR': '/run/chrome',
 }
 # The existence of this file indicates the user is logged in.
 _CHROMEOS_LOGGED_IN_FILE = '/var/run/state/logged-in'
