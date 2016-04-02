@@ -325,9 +325,9 @@ static MDMemoryDescriptor SnapshotMemory(MinidumpAllocator *minidump_writer,
 }
 
 static bool GetStackEnd(void **stack_end) {
-// ARC MOD BEGIN UPSTREAM chromium-bionic-minidump
-#if defined(__GLIBC__) || defined(__BIONIC__)
-// ARC MOD END UPSTREAM
+#if defined(_NEWLIB_VERSION)
+  return pthread_get_stack_end_np(pthread_self(), stack_end) == 0;
+#else
   void *stack_base;
   size_t stack_size;
   pthread_attr_t attr;
@@ -337,22 +337,16 @@ static bool GetStackEnd(void **stack_end) {
     pthread_attr_destroy(&attr);
     return true;
   }
-// ARC MOD BEGIN UPSTREAM chromium-bionic-minidump
-# if defined(__BIONIC__)
-  return false;
-# else
-// ARC MOD END UPSTREAM
+#if defined(__GLIBC__)
   // pthread_getattr_np() currently fails on the initial thread.  As a
   // workaround, if we reach here, assume we are on the initial thread
   // and get the initial thread's stack end as recorded by glibc.
   // See https://code.google.com/p/nativeclient/issues/detail?id=3431
   *stack_end = __libc_stack_end;
   return true;
-// ARC MOD BEGIN UPSTREAM chromium-bionic-minidump
-# endif
-// ARC MOD END UPSTREAM
 #else
-  return pthread_get_stack_end_np(pthread_self(), stack_end) == 0;
+  return false;
+#endif
 #endif
 }
 
