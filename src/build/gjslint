@@ -11,7 +11,7 @@ import sys
 # Modify the Python module search path to add the appropriate source code
 # subdirectories for the various tools that make up flake8.
 sys.path.insert(0, 'third_party/tools/python_gflags')
-sys.path.insert(0, 'third_party/tools')
+sys.path.insert(0, 'third_party/tools/closure_linter')
 
 from closure_linter.gjslint import main
 
