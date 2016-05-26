@@ -9,6 +9,7 @@ import glob
 import os
 import subprocess
 import sys
+import time
 
 from src.build.util import platform_util
 
@@ -79,3 +80,5 @@ if __name__ == '__main__':
   _cleanup_temporary_outputs()
   if '--buildbot' in sys.argv[1:]:
     _cleanup_processes()
+    # Workaround crbug.com/610723
+    time.sleep(60)
